@@ -70,6 +70,12 @@ async function run() {
       const email =  req.query.email;
       const query = { applicant_email : email};
       const result = await jobsApplication.find(query).toArray();
+
+      // not the best way 
+      for(const application of result){
+        console.log(application.job_id);
+        const query1 = {}
+      }
       res.send(result);
     })
 
