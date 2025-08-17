@@ -74,7 +74,15 @@ async function run() {
       // not the best way 
       for(const application of result){
         console.log(application.job_id);
-        const query1 = {}
+        const query1 = {_id: new ObjectId(application.job_id)}
+        const job = await jobsCollection.findOne(query1);
+        if(job){
+          application.title = job.title;
+          application.company = job.company;
+          application.jobType = job.jobType;
+          application.location = job.location;
+          application.company_logo = job.company_logo;
+        }
       }
       res.send(result);
     })
