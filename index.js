@@ -38,7 +38,13 @@ async function run() {
 
     // get jobs
     app.get('/jobs', async(req, res)=>{
-        const cursor = jobsCollection.find();
+      // jobs by particualr person
+        const email = req.query.email;
+        let query = {};
+        if(email){
+          query = {hr_email : email}
+        }
+        const cursor = jobsCollection.find(query);
         const result = await cursor.toArray();
         res.send(result);
     });
@@ -51,6 +57,13 @@ async function run() {
         res.send(result);
     });
 
+    // Create jobs
+    app.post('/jobs', async(req, res)=>{
+      const newJob = req.body;
+      const result = await jobsCollection.insertOne(newJob);
+      res.send(result);
+    })
+
     // job application
     app.post('/job-applications', async(req, res) =>{
       const application = req.body;
@@ -60,6 +73,29 @@ async function run() {
       if(existing){
         return res.send({success : false, message : "Already Applied"});
       }
+
+      // not the best way(best way use aggregate) how many people apply for that job
+      const id = application.job_id;
+      const query = { _id: new ObjectId(id)}
+      const job = await jobsCollection.findOne(query);
+      // console.log(job);
+      let count = 0;
+      if(job.applicationCount){
+        count = job.applicationCount + 1;
+      }
+      else{
+        count = 1;
+      }
+      // now update the joib info
+      const filter = {_id: new ObjectId(id)}
+      const updatedDoc = {
+        $set: {
+          applicationCount : count
+        }
+      }
+      const updateResult = await jobsCollection.updateOne(filter, updatedDoc);
+
+
       const result = await jobsApplication.insertOne(application);
       res.send(result);
     });
