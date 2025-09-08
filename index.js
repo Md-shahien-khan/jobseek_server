@@ -101,6 +101,20 @@ async function run() {
     });
 
 
+    app.patch('/job-applications/:id', async(req, res) =>{
+      const id = req.params.id;
+      const data = req.body;
+      const filter = {_id : new ObjectId(id)}
+      const updatedDoc = {
+        $set: {
+          status : data.status
+        }
+      }
+      const result = await jobsApplication.updateOne(filter, updatedDoc);
+      res.send(result);
+    })
+
+
     // your own applied jobs
     app.get('/job-application', async(req, res) =>{
       const email =  req.query.email;
@@ -120,6 +134,15 @@ async function run() {
           application.company_logo = job.company_logo;
         }
       }
+      res.send(result);
+    });
+
+
+    // get a specific job appplication id
+    app.get('/job-applications/jobs/:job_id', async(req, res)=>{
+      const jobId = req.params.job_id;
+      const query = {job_id: jobId}
+      const result = await jobsApplication.find(query).toArray();
       res.send(result);
     })
 
