@@ -1,13 +1,18 @@
 const express = require('express');
 const cors = require('cors');
 const app = express();
+// step 1 for jwt 
+const jwt = require('jsonwebtoken');
+const cookieParser = require('cookie-parser');
 require('dotenv').config();
 
 const port = process.env.PORT || 3000;
 const { MongoClient, ServerApiVersion, ObjectId } = require('mongodb');
 
+// step 2 for jwt add cookie parser
 app.use(cors());
 app.use(express.json());
+app.use(cookieParser());
 
 
 
@@ -35,6 +40,24 @@ async function run() {
     // Job Related API
     const jobsCollection = client.db('jobseek').collection('jobs');
     const jobsApplication = client.db('jobseek').collection('job_application');
+
+
+    // step 3 jwt auth related api
+    app.post('/jwt', async(req, res) =>{
+      const user = req.body;
+      const token = jwt.sign(user, process.env.JWT_SECRET , {expiresIn : '1h'});
+      // step 4
+      // res.send was there no wupdating cookie
+      res
+      .cookie('token', token, {
+        httpOnly : true,
+        secure : false,
+        // sameSite : 'strict'
+      }
+      )  
+      // .send(token);
+      .send({sucess : true})
+    });
 
     // get jobs
     app.get('/jobs', async(req, res)=>{
